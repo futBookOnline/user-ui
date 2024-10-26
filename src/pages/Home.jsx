@@ -2,13 +2,17 @@ import React, { useState, useEffect } from "react";
 import Layout from "../layouts/Layout";
 import { useRelatedApi } from "../helpers/api.helper";
 import FutsalCard from "../components/FutsalCard";
+import FutsalCardPlaceholder from "../components/FutsalCardPlaceholder";
 
 const Home = () => {
   const [futsals, setFutsals] = useState(null);
+  const [loadingFutsal, setLoadingFutsal] = useState(true);
+  const [loadingNearbyFutsal, setLoadingNearbyFutsal] = useState(true);
   const fetchAllFutsals = async () => {
     const futsals = await useRelatedApi("futsals", "get", "");
     if (futsals) {
       setFutsals(futsals.data);
+      setLoadingFutsal(false);
     }
   };
 
@@ -43,6 +47,7 @@ const Home = () => {
       ));
     if (nearbyFutsals) {
       setnearbyFutsals(nearbyFutsals.data);
+      setLoadingNearbyFutsal(false);
     }
   };
   useEffect(() => {
@@ -54,6 +59,7 @@ const Home = () => {
   }, [location, radius]);
   return (
     <Layout>
+      <div className="col">
       <div className="d-flex justify-content-between align-items-center">
         <h6>Nearby Futsals</h6>
         <div className="mb-2">
@@ -72,9 +78,15 @@ const Home = () => {
       </div>
 
       <hr />
-
-      {nearbyFutsals && nearbyFutsals.length > 0 ? (
-        <div className="d-flex gap-4 flex-wrap mb-3">
+      {loadingNearbyFutsal ? (
+        <div className="d-flex flex-wrap mb-3">
+          <FutsalCardPlaceholder />
+          <FutsalCardPlaceholder />
+          <FutsalCardPlaceholder />
+          <FutsalCardPlaceholder />
+        </div>
+      ) : nearbyFutsals && nearbyFutsals.length > 0 ? (
+        <div className="d-flex flex-wrap mb-3">
           {nearbyFutsals.map((futsal) => (
             <FutsalCard key={futsal.id} futsal={futsal} />
           ))}
@@ -85,8 +97,15 @@ const Home = () => {
       <div className="row">
         <h6>Futsals</h6>
         <hr />
-        {futsals && futsals.length > 0 ? (
-          <div className="d-flex gap-4 flex-wrap mb-3">
+        {loadingFutsal ? (
+          <div className="d-flex flex-wrap mb-3">
+          <FutsalCardPlaceholder />
+          <FutsalCardPlaceholder />
+          <FutsalCardPlaceholder />
+          <FutsalCardPlaceholder />
+          </div>
+        ) : futsals && futsals.length > 0 ? (
+          <div className="d-flex flex-wrap mb-3">
             {futsals.map((futsal) => (
               <FutsalCard key={futsal.id} futsal={futsal} />
             ))}
@@ -99,6 +118,7 @@ const Home = () => {
         <h6>Events</h6>
         <hr />
         <p className="text-center py-5">There are no events.</p>
+      </div>
       </div>
     </Layout>
   );

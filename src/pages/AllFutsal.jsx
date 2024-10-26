@@ -2,8 +2,10 @@ import React, {useState, useEffect} from 'react'
 import Layout from '../layouts/Layout'
 import FutsalCard from '../components/FutsalCard'
 import { useRelatedApi } from '../helpers/api.helper'
+import FutsalCardPlaceholder from '../components/FutsalCardPlaceholder'
 
 const AllFutsal = () => {
+  const[loadingFutsal, setLoadingFutsal] = useState(false)
   const [futsals, setFutsals] = useState(null);
   const fetchAllFutsals = async () => {
     const futsals = await useRelatedApi("futsals", "get", "");
@@ -18,8 +20,15 @@ const AllFutsal = () => {
     <Layout>
       <h6>Futsals</h6>
         <hr />
-        {futsals && futsals.length > 0 ? (
-          <div className="d-flex gap-4 flex-wrap mb-3">
+        {loadingFutsal ? 
+        <div className="d-flex flex-wrap mb-3">
+          <FutsalCardPlaceholder />
+          <FutsalCardPlaceholder />
+          <FutsalCardPlaceholder />
+          <FutsalCardPlaceholder />
+        </div> :
+        futsals && futsals.length > 0 ? (
+          <div className="d-flex flex-wrap mb-3">
             {futsals.map((futsal) => (
               <FutsalCard key={futsal.id} futsal={futsal} />
             ))}

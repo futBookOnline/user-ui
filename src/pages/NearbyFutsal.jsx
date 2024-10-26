@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Layout from "../layouts/Layout";
 import { useRelatedApi } from "../helpers/api.helper";
-import FutsalCard from "../components/FutsalCard"
+import FutsalCard from "../components/FutsalCard";
+import FutsalCardPlaceholder from "../components/FutsalCardPlaceholder";
 
 const NearbyFutsal = () => {
+  const [loadingNearbyFutsal, setLoadingNearbyFutsal] = useState(true);
   const [location, setLocation] = useState(null);
   const getLocation = () => {
     if (navigator.geolocation) {
@@ -36,7 +38,10 @@ const NearbyFutsal = () => {
         "get",
         ""
       ));
-    if (response) setNearbyFutsals(response.data);
+    if (response) {
+      setNearbyFutsals(response.data);
+      setLoadingNearbyFutsal(false);
+    }
   };
   useEffect(() => {
     fetchNearbyFutsals();
@@ -61,9 +66,15 @@ const NearbyFutsal = () => {
       </div>
 
       <hr />
-
-      {nearbyFutsals && nearbyFutsals.length > 0 ? (
-        <div className="d-flex gap-4 flex-wrap mb-3">
+      {loadingNearbyFutsal ? (
+        <div className="d-flex flex-wrap mb-3">
+          <FutsalCardPlaceholder />
+          <FutsalCardPlaceholder />
+          <FutsalCardPlaceholder />
+          <FutsalCardPlaceholder />
+        </div>
+      ) : nearbyFutsals && nearbyFutsals.length > 0 ? (
+        <div className="d-flex flex-wrap mb-3">
           {nearbyFutsals.map((futsal) => (
             <FutsalCard key={futsal.id} futsal={futsal} />
           ))}

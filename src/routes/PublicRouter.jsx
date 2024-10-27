@@ -41,7 +41,7 @@ const PublicRouter = () => {
         }
       />
       <Route
-        path="confirm-registration"
+        path="/confirm-registration"
         element={
           <PrivateRouter>
             <ConfirmRegistration />

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useRelatedApi } from "../../helpers/api.helper";
+import { Link } from "react-router-dom";
 
 const LoginModal = ({ modalClose, loginSuccess }) => {
   const [formData, setFormData] = useState(null);
@@ -9,13 +10,24 @@ const LoginModal = ({ modalClose, loginSuccess }) => {
     else if (!formData?.password) setError("Password is required");
     else {
       const response = await useRelatedApi("auth/login", "post", formData);
-      if(response.success){
-        localStorage.setItem("userId", response.data._id)
-        loginSuccess()
-        modalClose()
-      }
-      else{
-        setError(response.error)
+      if (response.success) {
+        localStorage.setItem("userId", response.data._id);
+        loginSuccess();
+        modalClose();
+      } else if (
+        response &&
+        response.error.toLowerCase() === "email is not active"
+      ) {
+        setError(response.error);
+        const userIdResponse = await useRelatedApi("users/email", "post", {
+          email: formData.email,
+        });
+        if (userIdResponse.success) {
+          localStorage.setItem("userId", userIdResponse.data._id);
+          
+        }
+      } else {
+        setError(response.error);
       }
     }
   };
@@ -37,21 +49,35 @@ const LoginModal = ({ modalClose, loginSuccess }) => {
             ></button>
           </div>
           <div className="modal-body">
-            <p className="text-danger text-center mb-3">{error}</p>
+            {error && (
+              <p className="text-danger text-center mb-3">
+                {error.toLowerCase() === "email is not active" ? (
+                  <>
+                    {error}
+                    {". "}
+                    <Link to="/confirm-registration">
+                      Click here to activate
+                    </Link>
+                  </>
+                ) : (
+                  error
+                )}
+              </p>
+            )}
+
             <div className="form-floating mb-3">
               <input
                 type="email"
                 className="form-control"
                 id="floatingInputEmail"
                 placeholder="name@example.com"
-                onChange={(event) =>{
-                  setError(null)
+                onChange={(event) => {
+                  setError(null);
                   setFormData((prev) => ({
                     ...prev,
                     email: event.target.value,
-                  }))
-                }
-                }
+                  }));
+                }}
               />
               <label htmlFor="floatingInputEmail">Email address</label>
             </div>
@@ -61,15 +87,13 @@ const LoginModal = ({ modalClose, loginSuccess }) => {
                 className="form-control"
                 id="floatingInputPassword"
                 placeholder="name@example.com"
-                onChange={(event) =>{
+                onChange={(event) => {
                   setError(null);
                   setFormData((prev) => ({
                     ...prev,
                     password: event.target.value,
-                  }))
-                }
-                  
-                }
+                  }));
+                }}
               />
               <label htmlFor="floatingInputPassword">Password</label>
             </div>

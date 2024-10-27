@@ -40,14 +40,7 @@ const PublicRouter = () => {
           </PrivateRouter>
         }
       />
-      <Route
-        path="/confirm-registration"
-        element={
-          <PrivateRouter>
-            <ConfirmRegistration />
-          </PrivateRouter>
-        }
-      />
+      <Route path="/confirm-registration" element={<ConfirmRegistration />} />
     </Routes>
   );
 };

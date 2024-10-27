@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useRelatedApi } from "../helpers/api.helper";
+import { useNavigate } from "react-router-dom";
 const id = localStorage.getItem("userId");
+
 console.log("USER ID: ", id);
 const ConfirmRegistration = () => {
+  const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [verificationCode, setVerificationCode] = useState(null);
   const fetchUser = async () => {
     const response = id && (await useRelatedApi(`users/${id}`, "get", ""));
     if (response.success) {
-      console.log("RESPONSE: ", response);
       return setUserData(response.data);
     }
   };
@@ -17,18 +19,17 @@ const ConfirmRegistration = () => {
   }, []);
 
   const fetchVerificationCode = async () => {
-    const response = userData && (
-      await useRelatedApi("users/registration-mail", "post", {
+    const response =
+      userData &&
+      (await useRelatedApi("users/registration-mail", "post", {
         fullName: userData.fullName,
         email: userData.email,
-      })
-    );
-    console.log("VER: ", response);
+      }));
     if (response && response.success) {
-      console.log("VERIFICATION CODE: ", response.data);
       setVerificationCode(response.data);
     }
   };
+
   useEffect(() => {
     fetchVerificationCode();
   }, [userData]);
@@ -51,10 +52,28 @@ const ConfirmRegistration = () => {
     return () => clearInterval;
   }, []);
   const resendVerification = () => {
-    setSeconds(10)
-    setIsActive(true)
-    fetchVerificationCode()
-  }
+    setSeconds(10);
+    setIsActive(true);
+    fetchVerificationCode();
+  };
+
+  const activateEmail = async () => {
+    const response =
+       (await useRelatedApi(`users/${id}/activate-email`, 'put', ''));
+      response && response.success ? navigate("/me") : setError(response.error);
+  };
+
+  const [error, setError] = useState(null);
+  const [formVerificationCode, setFormVerificationCode] = useState(null);
+  const handleSubmit = async () => {
+    if (!formVerificationCode) return setError("Enter verification code.");
+    if (verificationCode && formVerificationCode) {
+      return formVerificationCode === verificationCode
+        ? activateEmail()
+        : setError("Did not matched");
+    }
+  };
+
   return (
     <div className="container vh-100">
       <div className="row">
@@ -69,16 +88,40 @@ const ConfirmRegistration = () => {
               </span>
             </p>
           </div>
-          <div className="form-group">
-            <label htmlFor="confirmationInput">Verification Code</label>
-            <input id="confirmationInput" className="form-control" />
+          <div>
+            {error && <p className="text-danger text-center">{error}</p>}
+            <div div className="form-group mb-3">
+              <label htmlFor="confirmationInput">Verification Code</label>
+              <input
+                id="confirmationInput"
+                className="form-control"
+                onChange={(event) => {
+                  setError(null);
+                  setFormVerificationCode(() => Number(event.target.value));
+                }}
+              />
+            </div>
+            <div className="form-group">
+              <button
+                className="btn btn-primary form-control"
+                onClick={handleSubmit}
+              >
+                Submit
+              </button>
+            </div>
           </div>
+
           <div>
             <p className="text-center">
               Didn't receive verification code ? Try again after {seconds}{" "}
               seconds.{" "}
               {!isActive && (
-                <span className="btn btn-sm btn-primary" onClick={resendVerification}>RESEND</span>
+                <span
+                  className="text-primary text-decoration-underline"
+                  onClick={resendVerification}
+                >
+                  resend
+                </span>
               )}
             </p>
           </div>
